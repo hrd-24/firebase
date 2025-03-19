@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:testing/create/create_login.dart';
 import 'package:testing/home/home.dart';
-import 'package:testing/reusable/toast.dart';
-
+import 'package:testing/reusable/function.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,9 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-
-
-  // Fungsi untuk login dengan validasi error FirebaseAuth
+  // Fungsi login biasa dengan Firebase Authentication
   void _login() async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -49,20 +47,21 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // Jika login berhasil
       showToast("Login berhasil!");
-
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),
       );
     } on FirebaseAuthException catch (e) {
-      print("FirebaseAuth Error: ${e.code}"); // Debugging
+      print("FirebaseAuth Error: ${e.code}");
 
       String errorMessage = "Login gagal. Silakan isi dengan benar.";
 
       if (e.code == 'user-not-found') {
-        errorMessage = "Akun tidak ditemukan. Silakan daftar.";
+        // Jika user tidak ditemukan, arahkan ke login Google
+        showToast("Akun tidak ditemukan. Silakan login dengan Google.");
+        _loginWithGoogle();
+        return;
       } else if (e.code == 'wrong-password') {
         errorMessage = "Sandi salah. Coba lagi.";
       } else if (e.code == 'invalid-email') {
@@ -73,7 +72,39 @@ class _LoginScreenState extends State<LoginScreen> {
         errorMessage = "Terlalu banyak percobaan login. Coba lagi nanti.";
       }
 
-      _showToast(errorMessage);
+      showToast(errorMessage);
+    }
+  }
+
+  // Fungsi login dengan Google
+  Future<void> _loginWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        showToast("Login dengan Google dibatalkan.");
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      UserCredential userCredential = await _auth.signInWithCredential(
+        credential,
+      );
+
+      showToast("Login Google berhasil!");
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } catch (e) {
+      showToast("Login Google gagal: ${e.toString()}");
+      print("Google Sign-In Error: $e");
     }
   }
 
@@ -98,7 +129,9 @@ class _LoginScreenState extends State<LoginScreen> {
               builder: (BuildContext context) {
                 return AlertDialog(
                   title: Text("Konfirmasi"),
-                  content: Text("Apakah Anda yakin ingin keluar dari aplikasi?"),
+                  content: Text(
+                    "Apakah Anda yakin ingin keluar dari aplikasi?",
+                  ),
                   actions: [
                     TextButton(
                       child: Text("Cancel"),
@@ -114,16 +147,16 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           },
         ),
-        title: Text("Login", style: TextStyle(color: const Color.fromARGB(255, 255, 239, 239))),
-        backgroundColor: const Color.fromARGB(255, 69, 87, 102),
+        title: Text(
+          "Login",
+          style: TextStyle(color: textBar()),
+        ),
+       backgroundColor: appBarBG(),
       ),
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              'assets/images/bg_dark.jpg', 
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset('assets/images/bg_dark.jpg', fit: BoxFit.cover),
           ),
           Center(
             child: Card(
@@ -153,14 +186,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       obscureText: true,
                     ),
                     SizedBox(height: 16),
-                    ElevatedButton(
+                    ElevatedButton.icon(
                       onPressed: _login,
-                      child: Text("Login"),
+                      icon: Icon(Icons.lock),
+                      label: Text("Login"),
                     ),
                     SizedBox(height: 8),
-                    ElevatedButton(
+                    ElevatedButton.icon(
                       onPressed: _navigateToCreateAccount,
-                      child: Text("Create Account"),
+                      icon: Icon(Icons.person_add),
+                      label: Text("Create Account"),
+                    ),
+                    SizedBox(height: 8),
+                    ElevatedButton.icon(
+                      onPressed: _loginWithGoogle,
+                      icon: Icon(Icons.login),
+                      label: Text("Login with Google"),
                     ),
                   ],
                 ),

@@ -12,7 +12,20 @@
           "package_name": "com.ppkd.testing"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "205363801656-d0cc8uubft9g9ki2alg05l0ch42tbcql.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ppkd.testing",
+            "certificate_hash": "30600c168b6f8976c9fe71ec76c7104de1c43b66"
+          }
+        },
+        {
+          "client_id": "205363801656-5es0t5s6j2rogjdr8r49h14qa5crq16j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAMtPu9Fl7_KivqsVWjQQXMq26VGaVAS30"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "205363801656-5es0t5s6j2rogjdr8r49h14qa5crq16j.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "205363801656-e711d8bgd71joa8r8etht8bbis8sfuup.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.absensi"
+              }
+            }
+          ]
         }
       }
     }

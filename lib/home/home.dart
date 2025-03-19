@@ -1,15 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:testing/main.dart';
+import 'package:testing/reusable/function.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
-  // Navigasi ke halaman LoginScreen
+  // Fungsi navigasi ke halaman LoginScreen
   void _navigateToLoginScreen(BuildContext context) {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
+  }
+
+  // Fungsi logout dari akun Google dan Firebase
+  Future<void> _logout(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut(); // Logout dari Firebase
+      await GoogleSignIn().signOut(); // Logout dari Google
+
+      // Navigasi kembali ke halaman login
+      _navigateToLoginScreen(context);
+    } catch (e) {
+      print("Logout Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Gagal logout. Coba lagi!")),
+      );
+    }
   }
 
   @override
@@ -43,11 +62,42 @@ class HomeScreen extends StatelessWidget {
             );
           },
         ),
-        title: const Text(
+        title: Text(
           "Home",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: textBar()),
         ),
-        backgroundColor: const Color.fromARGB(255, 69, 87, 102),
+        backgroundColor: appBarBG(),
+        actions: [
+          // Tombol logout Google
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black,),
+            tooltip: "Logout",
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text("Konfirmasi Logout"),
+                    content: const Text("Apakah Anda yakin ingin logout dari akun Google?"),
+                    actions: [
+                      TextButton(
+                        child: const Text("Batal"),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      TextButton(
+                        child: const Text("Logout"),
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Tutup dialog
+                          _logout(context);
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: const Center(
         child: Text("Hello, World!", style: TextStyle(fontSize: 24)),

@@ -1,16 +1,13 @@
-# testing
+<!-- com examplenya diganti, sesuaikan kebutuhan
 
-A new Flutter project.
+google service json ambil dari firebase nya
 
-## Getting Started
+langsung ketik di terminal 
 
-This project is a starting point for a Flutter application.
+"flutterfire configure"  (pastiin fultter firenya work)
 
-A few resources to get you started if this is your first Flutter project:
+tambahin dependencies di pubspec buat fire base auth & core
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+keytool -list -v -alias androiddebugkey -keystore "C:\Users\PC-09\.android\debug.keystore" -storepass android  (dalam kutip disesuaikan sama instalasi android)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+cari sintaknya -->

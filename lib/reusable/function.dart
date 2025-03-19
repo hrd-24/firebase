@@ -12,3 +12,11 @@ void showToast(String message) {
       fontSize: 14.0,
     );
   }
+
+Color appBarBG() {
+  return const Color.fromARGB(255, 137, 176, 207);
+}
+
+Color textBar() {
+  return  Colors.black;
+}
