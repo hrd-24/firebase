@@ -2,76 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:testing/daftar/daftar_kontak.dart';
-import 'package:testing/details/account.dart';
 import 'package:testing/endpoint/reusable_users.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController numberController = TextEditingController();
+  bool isCheckedIn = false;
+  String? documentId;
 
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
 
     return Scaffold(
-     appBar: AppBar(
-  title: const Text("Tambah Data"),
-  backgroundColor: Colors.blueGrey,
-  actions: [
-    PopupMenuButton<String>(
-      onSelected: (String choice) {
-        if (choice == 'detail') {
-          // Navigasi ke halaman detail akun
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => DetailAccountPage()),
-          );
-        } else if (choice == 'logout') {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text("Konfirmasi"),
-                content: Text("Apakah Anda yakin ingin logout?"),
-                actions: [
-                  TextButton(
-                    child: Text("Cancel"),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  TextButton(
-                    child: Text("Logout"),
-                    onPressed: () {
-                      // Tambahkan fungsi logout di sini
-                      Navigator.of(context).pop();
-                      // Bisa ditambahkan navigasi ke halaman login
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
-      },
-      itemBuilder: (BuildContext context) {
-        return [
-          PopupMenuItem(
-            value: 'detail',
-            child: Text("Detail Akun"),
-          ),
-          PopupMenuItem(
-            value: 'logout',
-            child: Text("Logout"),
-          ),
-        ];
-      },
-    ),
-  ],
-),
-
+      appBar: AppBar(
+        title: const Text("Tambah Data"),
+        backgroundColor: Colors.blueGrey,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          children: [              
+          children: [
             TextField(
               controller: nameController,
               decoration: InputDecoration(
@@ -84,7 +40,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            
+
             TextField(
               controller: numberController,
               keyboardType: TextInputType.number,
@@ -98,32 +54,55 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            ElevatedButton.icon(
-              onPressed: () {
-                if (nameController.text.isNotEmpty &&
-                    numberController.text.isNotEmpty) {
-                  userProvider.addUser(
+
+            ElevatedButton(
+              onPressed: () async {
+                if (nameController.text.isEmpty || numberController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Nama dan Nomor harus diisi")),
+                  );
+                  return;
+                }
+
+                setState(() {
+                  isCheckedIn = !isCheckedIn;
+                });
+
+                if (documentId == null) {
+                  // Jika belum ada, buat baru
+                  DocumentReference docRef = await userProvider.addUser(
                     nameController.text,
                     numberController.text,
+                    isCheckedIn,
                   );
-                  nameController.clear();
-                  numberController.clear();
+                  documentId = docRef.id;
+                } else {
+                  // Jika sudah ada, update saja
+                  userProvider.updateChecked(documentId!, isCheckedIn);
                 }
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(isCheckedIn
+                        ? "Anda sudah Check-in"
+                        : "Anda sudah Check-out"),
+                  ),
+                );
               },
-              icon: Icon(Icons.add),
-              label: const Text("Tambah Data"),
               style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                padding: EdgeInsets.symmetric(vertical: 12),
+                backgroundColor: isCheckedIn
+                    ? Colors.red
+                    : Colors.green,
+              ),
+              child: Text(
+                isCheckedIn ? "Check-out" : "Check-in",
+                style: TextStyle(color: Colors.white),
               ),
             ),
           ],
         ),
       ),
 
-      // Floating Action Button untuk pindah ke DaftarScreen
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -142,27 +121,38 @@ class HomeScreen extends StatelessWidget {
 class UserProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  void blockUser(String id) {
-    _firestore.collection('new').doc(id).update({'blocked': true});
+  Future<DocumentReference> addUser(String name, String number, bool checked) async {
+    try {
+      DocumentReference docRef = await _firestore.collection(NewUser.hrdusers).add({
+        'name': name,
+        'number': number,
+        'checked': checked,
+      });
+      notifyListeners();
+      return docRef;
+    } catch (e) {
+      print("Error adding user: $e");
+      throw e;
+    }
   }
 
-  void unblockUser(String id) {
-    _firestore.collection(NewUser.hrdusers).doc(id).update({'blocked': false});
+  Future<void> updateChecked(String id, bool value) async {
+    try {
+      await _firestore.collection(NewUser.hrdusers).doc(id).update({
+        'checked': value,
+      });
+      notifyListeners();
+    } catch (e) {
+      print("Error updating checked: $e");
+    }
   }
 
-  void addUser(String name, String number) {
-    _firestore.collection(NewUser.hrdusers).add({
-      'name': name,
-      'number': number,
-      'checked': false,
-    });
-  }
-
-  void updateChecked(String id, bool value) {
-    _firestore.collection(NewUser.hrdusers).doc(id).update({'checked': value});
-  }
-
-  void deleteUser(String id) {
-    _firestore.collection(NewUser.hrdusers).doc(id).delete();
+  Future<void> deleteUser(String id) async {
+    try {
+      await _firestore.collection(NewUser.hrdusers).doc(id).delete();
+      notifyListeners();
+    } catch (e) {
+      print("Error deleting user: $e");
+    }
   }
 }

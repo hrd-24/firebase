@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:testing/endpoint/reusable_users.dart';
 import 'package:testing/home/home.dart';
 
-
 class DaftarScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -18,71 +17,64 @@ class DaftarScreen extends StatelessWidget {
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection(NewUser.hrdusers).snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (!snapshot.hasData)
+          if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
+          }
 
           return ListView(
             padding: const EdgeInsets.all(10),
-            children:
-                snapshot.data!.docs.map((doc) {
-                  return Card(
-                    elevation: 3,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: ListTile(
-                      leading: Checkbox(
-                        value: doc['checked'],
-                        onChanged:
-                            doc['blocked']
-                                ? null
-                                : (bool? value) {
-                                  userProvider.updateChecked(doc.id, value!);
-                                },
-                      ),
+            children: snapshot.data!.docs.map((doc) {
+              bool isChecked = doc['checked'];
 
-                      title: Text(
-                        doc['name'],
-                        style: const TextStyle(
-                          fontSize: 18,
+              return Card(
+                elevation: 3,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ListTile(
+                  leading: Checkbox(
+                    value: isChecked,
+                    onChanged: (bool? value) {
+                      userProvider.updateChecked(doc.id, value!);
+                    },
+                  ),
+                  title: Text(
+                    doc['name'],
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(doc['number']),
+                      Text(
+                        isChecked ? "Status: ✅ Check-in" : "Status: ❌ Check-out",
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
+                          color: isChecked ? Colors.green : Colors.red,
                         ),
                       ),
-                      subtitle: Text(doc['number']),
-                      trailing: PopupMenuButton<String>(
-                        onSelected: (value) {
-                          if (value == "edit") {
-                            _editUser(context, doc);
-                          } else if (value == "delete") {
-                            userProvider.deleteUser(doc.id);
-                          } else if (value == "block") {
-                            userProvider.blockUser(doc.id);
-                          } else if (value == "unblock") {
-                            userProvider.unblockUser(doc.id);
-                          }
-                        },
-                        itemBuilder:
-                            (BuildContext context) => [
-                              const PopupMenuItem(
-                                value: "edit",
-                                child: Text("Edit"),
-                              ),
-                              const PopupMenuItem(
-                                value: "delete",
-                                child: Text("Hapus"),
-                              ),
-                              PopupMenuItem(
-                                value: doc['blocked'] ? "unblock" : "block",
-                                child: Text(
-                                  doc['blocked'] ? "Buka Blokir" : "Blokir",
-                                ),
-                              ),
-                            ],
-                      ),
-                    ),
-                  );
-                }).toList(),
+                    ],
+                  ),
+                  trailing: PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == "edit") {
+                        _editUser(context, doc);
+                      } else if (value == "delete") {
+                        userProvider.deleteUser(doc.id);
+                      }
+                    },
+                    itemBuilder: (BuildContext context) => [
+                      const PopupMenuItem(value: "edit", child: Text("Edit")),
+                      const PopupMenuItem(value: "delete", child: Text("Hapus")),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
           );
         },
       ),
@@ -90,12 +82,8 @@ class DaftarScreen extends StatelessWidget {
   }
 
   void _editUser(BuildContext context, QueryDocumentSnapshot doc) {
-    TextEditingController nameController = TextEditingController(
-      text: doc['name'],
-    );
-    TextEditingController numberController = TextEditingController(
-      text: doc['number'],
-    );
+    TextEditingController nameController = TextEditingController(text: doc['name']);
+    TextEditingController numberController = TextEditingController(text: doc['number']);
 
     showDialog(
       context: context,
@@ -105,30 +93,18 @@ class DaftarScreen extends StatelessWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: "Nama"),
-              ),
-              TextField(
-                controller: numberController,
-                decoration: const InputDecoration(labelText: "Nomor"),
-              ),
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: "Nama")),
+              TextField(controller: numberController, decoration: const InputDecoration(labelText: "Nomor")),
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Batal"),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Batal")),
             ElevatedButton(
               onPressed: () {
-                FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(doc.id)
-                    .update({
-                      'name': nameController.text,
-                      'number': numberController.text,
-                    });
+                FirebaseFirestore.instance.collection(NewUser.hrdusers).doc(doc.id).update({
+                  'name': nameController.text,
+                  'number': numberController.text,
+                });
                 Navigator.pop(context);
               },
               child: const Text("Simpan"),

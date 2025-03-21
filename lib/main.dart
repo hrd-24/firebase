@@ -12,7 +12,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  runApp(
+   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Login Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: LoginScreen(),
+      home: HomeScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -44,7 +44,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
+        email: emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
@@ -101,10 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-
-      UserCredential userCredential = await _auth.signInWithCredential(
-        credential,
-      );
+      await _auth.signInWithCredential(credential);
 
       showToast("Login Google berhasil!");
       Navigator.pushReplacement(
@@ -156,11 +153,8 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           },
         ),
-        title: Text(
-          "Login",
-          style: TextStyle(color: textBar()),
-        ),
-       backgroundColor: appBarBG(),
+        title: Text("Login", style: TextStyle(color: textBar())),
+        backgroundColor: appBarBG(),
       ),
       body: Stack(
         children: [
@@ -185,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     SizedBox(height: 16),
                     TextField(
-                      controller: _emailController,
+                      controller: emailController,
                       decoration: InputDecoration(labelText: "Email"),
                     ),
                     SizedBox(height: 8),

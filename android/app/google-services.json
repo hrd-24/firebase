@@ -87,6 +87,42 @@
     },
     {
       "client_info": {
+        "mobilesdk_app_id": "1:350815746161:android:f069d93a69e97f5082c3d0",
+        "android_client_info": {
+          "package_name": "com.galih.easyticket"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "350815746161-tkq5eshh702oqsd7n6aheq6451ffh8i4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAE3Q3MpbAEYfbOOpmmsLSWjpBMKh-5TGc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "350815746161-tkq5eshh702oqsd7n6aheq6451ffh8i4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "350815746161-c63ehftfqghgcam8dvm43ktk7v8ipv3b.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.absenGeura"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:350815746161:android:2a61b723e8727d3082c3d0",
         "android_client_info": {
           "package_name": "com.ppkd.mobile"
@@ -131,9 +167,9 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:350815746161:android:6ca28d0e8d9732e782c3d0",
+        "mobilesdk_app_id": "1:350815746161:android:ef975fcacbea245b82c3d0",
         "android_client_info": {
-          "package_name": "com.ppkd.testing"
+          "package_name": "com.ppkd.testingg"
         }
       },
       "oauth_client": [
@@ -167,12 +203,20 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:350815746161:android:867625b406b53d8682c3d0",
+        "mobilesdk_app_id": "1:350815746161:android:7131fa4fa87a38b882c3d0",
         "android_client_info": {
-          "package_name": "com.saliim.absengeura"
+          "package_name": "com.saliim.absengeuraa"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "350815746161-knkll0ifecaip3e26eem4m2bs92pm600.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.saliim.absengeuraa",
+            "certificate_hash": "1e1b44a5447b225a3ab6538ca5ca35e31d476e4e"
+          }
+        },
         {
           "client_id": "350815746161-tkq5eshh702oqsd7n6aheq6451ffh8i4.apps.googleusercontent.com",
           "client_type": 3
