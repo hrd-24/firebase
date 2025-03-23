@@ -20,3 +20,8 @@ Color appBarBG() {
 Color textBar() {
   return  Colors.black;
 }
+
+
+class NewUser {
+ static const String hrdpage = 'HrdPage';
+} 

@@ -51,12 +51,20 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:350815746161:android:acd19495b5f59d8982c3d0",
+        "mobilesdk_app_id": "1:350815746161:android:244eb2989526b3f982c3d0",
         "android_client_info": {
-          "package_name": "com.company.ApisApp"
+          "package_name": "com.company.ApisAppp"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "350815746161-gjlqh0gkj65sp2k096ff77squqvj8ejt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.company.ApisAppp",
+            "certificate_hash": "5530a44f94740f879a5f6ca72efdfc370b7e1382"
+          }
+        },
         {
           "client_id": "350815746161-tkq5eshh702oqsd7n6aheq6451ffh8i4.apps.googleusercontent.com",
           "client_type": 3
@@ -93,6 +101,22 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "350815746161-6vpmeiad4fcmasa41ppkm5r89hm3e3s0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.galih.easyticket",
+            "certificate_hash": "3bae8a8f94837fb94a1237dbfebddfae95dd50f2"
+          }
+        },
+        {
+          "client_id": "350815746161-mj9s8utqg92rrf6kbsbgfdb001qe46qh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.galih.easyticket",
+            "certificate_hash": "e057c2bec4514924bfb1f92c55dfe2908034b382"
+          }
+        },
         {
           "client_id": "350815746161-tkq5eshh702oqsd7n6aheq6451ffh8i4.apps.googleusercontent.com",
           "client_type": 3
@@ -173,6 +197,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "350815746161-r135ammjin1357bn8gk9am7dn9uuklpk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ppkd.testingg",
+            "certificate_hash": "30600c168b6f8976c9fe71ec76c7104de1c43b66"
+          }
+        },
         {
           "client_id": "350815746161-tkq5eshh702oqsd7n6aheq6451ffh8i4.apps.googleusercontent.com",
           "client_type": 3

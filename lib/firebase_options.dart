@@ -33,10 +33,7 @@ class DefaultFirebaseOptions {
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -65,6 +62,16 @@ class DefaultFirebaseOptions {
     messagingSenderId: '350815746161',
     projectId: 'ppkd-mp',
     storageBucket: 'ppkd-mp.firebasestorage.app',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyBCNgSZW6BYG-PPa7SL7E4MUB8uttOQH20',
+    appId: '1:350815746161:web:5f2a0fc15c7accf482c3d0',
+    messagingSenderId: '350815746161',
+    projectId: 'ppkd-mp',
+    authDomain: 'ppkd-mp.firebaseapp.com',
+    storageBucket: 'ppkd-mp.firebasestorage.app',
+    measurementId: 'G-CETD9Y3H5M',
   );
 
 }

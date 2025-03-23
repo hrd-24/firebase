@@ -1,158 +1,76 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:provider/provider.dart';
-import 'package:testing/daftar/daftar_kontak.dart';
-import 'package:testing/endpoint/reusable_users.dart';
+import 'package:testing/reusable/function.dart';
+import 'package:testing/service/user_collection.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController numberController = TextEditingController();
-  bool isCheckedIn = false;
-  String? documentId;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final HrdPageService _hrdPageService = HrdPageService(); // Instance dari class HrdPageService
+
+  String? _userEmail;
+  String? _userPhone;
+  String? _userGender;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserData();
+    _hrdPageService.saveUserToHrdPage(); // Simpan ke HrdPage saat pertama login
+  }
+
+  Future<void> _getUserData() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      DocumentSnapshot userDoc = await _firestore.collection(NewUser.hrdpage).doc(user.uid).get();
+      if (userDoc.exists) {
+        setState(() {
+          _userEmail = userDoc['email'];
+          _userPhone = userDoc['phone_number'];
+          _userGender = userDoc['gender'];
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Tambah Data"),
-        backgroundColor: Colors.blueGrey,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: "Nama",
-                hintText: "Masukkan Nama",
-                prefixIcon: Icon(Icons.person),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: numberController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: "Nomor",
-                hintText: "Masukkan Nomor",
-                prefixIcon: Icon(Icons.phone),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            ElevatedButton(
-              onPressed: () async {
-                if (nameController.text.isEmpty || numberController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Nama dan Nomor harus diisi")),
-                  );
-                  return;
-                }
-
-                setState(() {
-                  isCheckedIn = !isCheckedIn;
-                });
-
-                if (documentId == null) {
-                  // Jika belum ada, buat baru
-                  DocumentReference docRef = await userProvider.addUser(
-                    nameController.text,
-                    numberController.text,
-                    isCheckedIn,
-                  );
-                  documentId = docRef.id;
-                } else {
-                  // Jika sudah ada, update saja
-                  userProvider.updateChecked(documentId!, isCheckedIn);
-                }
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(isCheckedIn
-                        ? "Anda sudah Check-in"
-                        : "Anda sudah Check-out"),
+      appBar: AppBar(title: Text("Home Screen"), backgroundColor: Colors.blueGrey),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Email: $_userEmail"),
+                  Text("Phone: $_userPhone"),
+                  Text("Gender: $_userGender"),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () async {
+                      var userData = await _hrdPageService.getUserFromHrdPage();
+                      if (userData != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("Data HRD: ${userData['email']}"),
+                        ));
+                      }
+                    },
+                    child: Text("Get HRD Data"),
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isCheckedIn
-                    ? Colors.red
-                    : Colors.green,
-              ),
-              child: Text(
-                isCheckedIn ? "Check-out" : "Check-in",
-                style: TextStyle(color: Colors.white),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
-
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => DaftarScreen()),
-          );
-        },
-        backgroundColor: Colors.blueGrey,
-        child: const Icon(Icons.list),
-      ),
     );
-  }
-}
-
-// Provider untuk mengelola data
-class UserProvider extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  Future<DocumentReference> addUser(String name, String number, bool checked) async {
-    try {
-      DocumentReference docRef = await _firestore.collection(NewUser.hrdusers).add({
-        'name': name,
-        'number': number,
-        'checked': checked,
-      });
-      notifyListeners();
-      return docRef;
-    } catch (e) {
-      print("Error adding user: $e");
-      throw e;
-    }
-  }
-
-  Future<void> updateChecked(String id, bool value) async {
-    try {
-      await _firestore.collection(NewUser.hrdusers).doc(id).update({
-        'checked': value,
-      });
-      notifyListeners();
-    } catch (e) {
-      print("Error updating checked: $e");
-    }
-  }
-
-  Future<void> deleteUser(String id) async {
-    try {
-      await _firestore.collection(NewUser.hrdusers).doc(id).delete();
-      notifyListeners();
-    } catch (e) {
-      print("Error deleting user: $e");
-    }
   }
 }

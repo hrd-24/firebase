@@ -1,84 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:testing/service/user_account.dart';
 
 class CreateAccountPage extends StatefulWidget {
-  const CreateAccountPage({super.key});
-
   @override
   _CreateAccountPageState createState() => _CreateAccountPageState();
 }
 
 class _CreateAccountPageState extends State<CreateAccountPage> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _phoneNumberController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController _phoneController = TextEditingController();
+  String _selectedGender = 'Male'; // Default pilihan gender
 
-  Future<void> _createAccount() async {
-    String email = _usernameController.text.trim();
+  final UserCreate _userCreate = UserCreate(); // Instance UserCreate
+
+  void _register() async {
+    String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
-    String phoneNumber = _phoneNumberController.text.trim();
+    String phoneNumber = _phoneController.text.trim();
+    String gender = _selectedGender;
 
     if (email.isEmpty || password.isEmpty || phoneNumber.isEmpty) {
-      _showErrorDialog("All fields are required!");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Semua field harus diisi!")),
+      );
       return;
     }
 
-    if (phoneNumber.length < 11) {
-      _showErrorDialog("Phone number must be at least 11 digits.");
-      return;
-    }
-
-    try {
-      UserCredential userCredential = await _auth
-          .createUserWithEmailAndPassword(email: email, password: password);
-
-      Navigator.pop(context, {
-        'username': email,
-        'password': password,
-        'phoneNumber': phoneNumber,
-        'userId': userCredential.user?.uid,
-      });
-
-      _showSuccessDialog();
-    } on FirebaseAuthException catch (e) {
-      _showErrorDialog(e.message ?? "Failed to create account.");
-    }
-  }
-
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text("Error"),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text("OK"),
-              ),
-            ],
-          ),
+    String? result = await _userCreate.createAccount(
+      email: email,
+      password: password,
+      phoneNumber: phoneNumber,
+      gender: gender,
     );
-  }
 
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text("Success"),
-            content: Text("Account created successfully!"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text("OK"),
-              ),
-            ],
-          ),
-    );
+    if (result == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Akun berhasil dibuat!")),
+      );
+      Navigator.pop(context); // Kembali ke halaman sebelumnya
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $result")),
+      );
+    }
   }
 
   @override
@@ -87,14 +53,12 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: const Text('Create Account'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
+          title: Text('Create Account'),
           backgroundColor: Colors.blueGrey,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
         body: Stack(
           children: [
@@ -129,7 +93,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                       SizedBox(height: 10),
                       TextField(
-                        controller: _usernameController,
+                        controller: _emailController,
                         decoration: InputDecoration(
                           labelText: 'Email',
                           border: OutlineInputBorder(),
@@ -146,7 +110,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                       SizedBox(height: 10),
                       TextField(
-                        controller: _phoneNumberController,
+                        controller: _phoneController,
                         decoration: InputDecoration(
                           labelText: 'Phone Number',
                           border: OutlineInputBorder(),
@@ -157,11 +121,30 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                           LengthLimitingTextInputFormatter(15),
                         ],
                       ),
+                      SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        value: _selectedGender,
+                        decoration: InputDecoration(
+                          labelText: 'Gender',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: ['Male', 'Female'].map((String gender) {
+                          return DropdownMenuItem<String>(
+                            value: gender,
+                            child: Text(gender),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedGender = value!;
+                          });
+                        },
+                      ),
                       SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: _createAccount,
+                        onPressed: _register,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 24, 0, 0),
+                          backgroundColor: Colors.blue,
                           padding: EdgeInsets.symmetric(
                             horizontal: 50,
                             vertical: 12,
@@ -172,11 +155,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                         ),
                         child: Text(
                           'Create Account',
-                          style: TextStyle(
-                            color: const Color.fromARGB(255, 255, 255, 255),
-                          ),
+                          style: TextStyle(color: Colors.white),
                         ),
                       ),
+                      SizedBox(height: 10),
                     ],
                   ),
                 ),
