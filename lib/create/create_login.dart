@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:testing/service/user_account.dart';
 
 class CreateAccountPage extends StatefulWidget {
@@ -14,6 +16,19 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   String _selectedGender = 'Male'; // Default pilihan gender
 
   final UserCreate _userCreate = UserCreate(); // Instance UserCreate
+
+  File? _selectedImage; // Untuk menyimpan gambar yang dipilih
+
+  final ImagePicker _picker = ImagePicker(); // Inisialisasi ImagePicker
+
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
 
   void _register() async {
     String email = _emailController.text.trim();
@@ -73,7 +88,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
             ),
             Center(
               child: Card(
-                margin: EdgeInsets.symmetric(horizontal: 20, vertical: 100),
+                margin: EdgeInsets.symmetric(horizontal: 20, vertical: 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -91,6 +106,48 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                           color: Colors.blue.shade800,
                         ),
                       ),
+                      SizedBox(height: 10),
+                      
+                      // == WIDGET GAMBAR ==
+                      GestureDetector(
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Wrap(
+                                children: [
+                                  ListTile(
+                                    leading: Icon(Icons.camera_alt),
+                                    title: Text('Ambil Foto'),
+                                    onTap: () {
+                                      _pickImage(ImageSource.camera);
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: Icon(Icons.photo_library),
+                                    title: Text('Pilih dari Galeri'),
+                                    onTap: () {
+                                      _pickImage(ImageSource.gallery);
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.blue.shade100,
+                          backgroundImage:
+                              _selectedImage != null ? FileImage(_selectedImage!) : null,
+                          child: _selectedImage == null
+                              ? Icon(Icons.camera_alt, size: 50, color: Colors.blue)
+                              : null,
+                        ),
+                      ),
+
                       SizedBox(height: 10),
                       TextField(
                         controller: _emailController,
