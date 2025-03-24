@@ -1,13 +1,15 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:testing/create/create_login.dart';
 import 'package:testing/home/home.dart';
+import 'package:testing/home/test.dart';
 import 'package:testing/reusable/function.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Gunakan ini, bukan FirebaseAuth.ensureInitialized()
+  await Firebase.initializeApp();
 
   runApp(const MyApp());
 }
@@ -20,14 +22,51 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Login Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: LoginScreen(),
+      home: const LoginScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  void _login() async {
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Email dan Password harus diisi!")),
+      );
+      return;
+    }
+
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => Testing()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Login gagal: ${e.toString()}")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +81,7 @@ class LoginScreen extends StatelessWidget {
               builder: (BuildContext context) {
                 return AlertDialog(
                   title: const Text("Konfirmasi"),
-                  content: const Text(
-                    "Apakah Anda yakin ingin keluar dari aplikasi?",
-                  ),
+                  content: const Text("Apakah Anda yakin ingin keluar dari aplikasi?"),
                   actions: [
                     TextButton(
                       child: const Text("Cancel"),
@@ -89,27 +126,22 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const TextField(
-                      decoration: InputDecoration(labelText: "Email"),
+                    TextField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(labelText: "Email"),
                     ),
                     const SizedBox(height: 8),
-                    const TextField(
-                      decoration: InputDecoration(labelText: "Password"),
+                    TextField(
+                      controller: _passwordController,
+                      decoration: const InputDecoration(labelText: "Password"),
                       obscureText: true,
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => HomeScreen(),
-                          ), // Panggil halaman yang benar
-                        );
-                      },
+                      onPressed: _login,
                       icon: const Icon(Icons.lock),
                       label: const Text("Login"),
-                    ),
+                    ), 
                     const SizedBox(height: 8),
                     ElevatedButton.icon(
                       onPressed: () {
@@ -117,13 +149,12 @@ class LoginScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => CreateAccountPage(),
-                          ), // Panggil halaman yang benar
+                          ),
                         );
                       },
                       icon: const Icon(Icons.person_add),
                       label: const Text("Create Account"),
                     ),
-
                     const SizedBox(height: 8),
                     ElevatedButton.icon(
                       onPressed: () {

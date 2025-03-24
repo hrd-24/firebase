@@ -30,7 +30,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     }
   }
 
-  void _register() async {
+  void register() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
     String phoneNumber = _phoneController.text.trim();
@@ -199,7 +199,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                       SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: _register,
+                        onPressed: register,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           padding: EdgeInsets.symmetric(
