@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:testing/detail/detail.dart';
 import 'package:testing/rekap/absensi.dart';
+import 'package:testing/reusable/function.dart';
 
 class Testing extends StatefulWidget {
   @override
@@ -8,103 +12,135 @@ class Testing extends StatefulWidget {
 }
 
 class _TestingState extends State<Testing> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   bool isCheckedIn = false;
   String? currentCheckInTime;
   String? currentCheckOutTime;
-  List<Map<String, String?>> attendanceRecords = [];
 
-  void toggleCheckIn() {
-    setState(() {
-      if (!isCheckedIn) {
-        currentCheckInTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-        currentCheckOutTime = null;
-        isCheckedIn = true;
-        
-        // Tambahkan data check-in baru ke daftar
-        attendanceRecords.add({
-          'checkIn': currentCheckInTime,
-          'checkOut': null,
-        });
-      }
-    });
+  @override
+  void initState() {
+    super.initState();
+    _loadAttendanceStatus();
   }
 
-  void toggleCheckOut() {
-    if (isCheckedIn) {
+  // Fungsi untuk memuat status Check In dari Firestore
+  Future<void> _loadAttendanceStatus() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      String uid = user.uid;
+      DocumentSnapshot doc = await _firestore.collection(NewUser.hrdpage).doc(uid).get();
+
+      if (doc.exists) {
+        setState(() {
+          isCheckedIn = doc['isCheckedIn'] ?? false;
+          currentCheckInTime = doc['checkIn'];
+          currentCheckOutTime = doc['checkOut'];
+        });
+      }
+    }
+  }
+
+  // Fungsi untuk Check In
+  Future<void> toggleCheckIn() async {
+    User? user = _auth.currentUser;
+    if (user != null && !isCheckedIn) {
+      String uid = user.uid;
+      String checkInTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+      await _firestore.collection(NewUser.hrdpage).doc(uid).set({
+        'uid': uid,
+        'email': user.email,
+        'checkIn': checkInTime,
+        'checkOut': null,
+        'isCheckedIn': true,
+      }, SetOptions(merge: true));
+
       setState(() {
-        currentCheckOutTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+        currentCheckInTime = checkInTime;
+        currentCheckOutTime = null;
+        isCheckedIn = true;
+      });
+    }
+  }
+
+  // Fungsi untuk Check Out
+  Future<void> toggleCheckOut() async {
+    User? user = _auth.currentUser;
+    if (user != null && isCheckedIn) {
+      String uid = user.uid;
+      String checkOutTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+      await _firestore.collection(NewUser.hrdpage).doc(uid).set({
+        'checkOut': checkOutTime,
+        'isCheckedIn': false,
+      }, SetOptions(merge: true));
+
+      setState(() {
+        currentCheckOutTime = checkOutTime;
         isCheckedIn = false;
-        
-        // Update record check-in terakhir dengan check-out
-        if (attendanceRecords.isNotEmpty) {
-          attendanceRecords.last['checkOut'] = currentCheckOutTime;
-        }
       });
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Testing Page'),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              // Tambahkan fungsi detail account dan logout nanti
-            },
-            itemBuilder: (BuildContext context) {
-              return [
-                PopupMenuItem(
-                  value: "detail_account",
-                  child: Text("Detail Account"),
-                ),
-                PopupMenuItem(
-                  value: "logout",
-                  child: Text("Logout"),
-                ),
-              ];
-            },
-          ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ElevatedButton(
-              onPressed: toggleCheckIn,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isCheckedIn ? Colors.grey : Colors.green,
-              ),
-              child: Text("Check In"),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: toggleCheckOut,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isCheckedIn ? Colors.red : Colors.grey,
-              ),
-              child: Text("Check Out"),
-            ),
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Testing Page'),
+      actions: [
+        PopupMenuButton<String>(
+          onSelected: (value) {
+            if (value == 'List Hadir') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => DetailScreen()),
+              );
+            }
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(value: 'List Hadir', child: Text('Detail Account')),
           ],
         ),
+      ],
+    ),
+    body: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text("Check In: ${currentCheckInTime ?? '-'}", style: TextStyle(fontSize: 16)),
+          Text("Check Out: ${currentCheckOutTime ?? '-'}", style: TextStyle(fontSize: 16)),
+          SizedBox(height: 20),
+          isCheckedIn
+              ? ElevatedButton.icon(
+                  onPressed: toggleCheckOut,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  icon: Icon(Icons.logout),
+                  label: Text("Check Out"),
+                )
+              : ElevatedButton.icon(
+                  onPressed: toggleCheckIn,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  icon: Icon(Icons.login),
+                  label: Text("Check In"),
+                ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ListHadir(attendanceRecords: attendanceRecords),
-            ),
-          );
-        },
-        child: Icon(Icons.list),
-      ),
-    );
-  }
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ListHadir()),
+        );
+      },
+      backgroundColor: Colors.blue,
+      child: Icon(Icons.list),
+    ),
+    floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+  );
 }
+
+  }
+

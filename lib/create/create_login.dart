@@ -10,10 +10,10 @@ class CreateAccountPage extends StatefulWidget {
 }
 
 class _CreateAccountPageState extends State<CreateAccountPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  String _selectedGender = 'Male'; // Default pilihan gender
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  String selectedGender = 'Male'; // Default pilihan gender
 
   final UserCreate _userCreate = UserCreate(); // Instance UserCreate
 
@@ -31,10 +31,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   }
 
   void register() async {
-    String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
-    String phoneNumber = _phoneController.text.trim();
-    String gender = _selectedGender;
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+    String phoneNumber = phoneController.text.trim();
+    String gender = selectedGender;
 
     if (email.isEmpty || password.isEmpty || phoneNumber.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -150,7 +150,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
                       SizedBox(height: 10),
                       TextField(
-                        controller: _emailController,
+                        controller: emailController,
                         decoration: InputDecoration(
                           labelText: 'Email',
                           border: OutlineInputBorder(),
@@ -158,7 +158,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                       SizedBox(height: 10),
                       TextField(
-                        controller: _passwordController,
+                        controller: passwordController,
                         decoration: InputDecoration(
                           labelText: 'Password',
                           border: OutlineInputBorder(),
@@ -167,7 +167,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                       SizedBox(height: 10),
                       TextField(
-                        controller: _phoneController,
+                        controller: phoneController,
                         decoration: InputDecoration(
                           labelText: 'Phone Number',
                           border: OutlineInputBorder(),
@@ -180,7 +180,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                       SizedBox(height: 10),
                       DropdownButtonFormField<String>(
-                        value: _selectedGender,
+                        value: selectedGender,
                         decoration: InputDecoration(
                           labelText: 'Gender',
                           border: OutlineInputBorder(),
@@ -193,7 +193,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                         }).toList(),
                         onChanged: (value) {
                           setState(() {
-                            _selectedGender = value!;
+                            selectedGender = value!;
                           });
                         },
                       ),

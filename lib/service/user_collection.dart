@@ -26,7 +26,6 @@ class HrdPageService {
           'email': email,
           'phone_number': phoneNumber,
           'gender': gender,
-          'registered_at': FieldValue.serverTimestamp(), // Timestamp saat pertama kali masuk ke HrdPage
         }, SetOptions(merge: true));
       }
     }

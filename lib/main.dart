@@ -3,9 +3,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:testing/create/create_login.dart';
-import 'package:testing/home/home.dart';
 import 'package:testing/home/test.dart';
 import 'package:testing/reusable/function.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Login Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const LoginScreen(),
+      home:  LoginScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -40,33 +40,37 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  void _login() async {
-    String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
+ void _login() async {
+  String email = _emailController.text.trim();
+  String password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Email dan Password harus diisi!")),
-      );
-      return;
-    }
-
-    try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => Testing()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login gagal: ${e.toString()}")),
-      );
-    }
+  if (email.isEmpty || password.isEmpty) {
+    Fluttertoast.showToast(
+      msg: "Email dan Password harus diisi!",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+    );
+    return;
   }
+
+  try {
+    UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Testing()),
+    );
+  } catch (e) {
+    Fluttertoast.showToast(
+      msg: "Login gagal: ${e.toString()}",
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
