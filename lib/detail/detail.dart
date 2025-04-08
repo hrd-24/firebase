@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:testing/reusable/function.dart';
 
 class DetailScreen extends StatefulWidget {
   @override
@@ -28,7 +29,7 @@ class _DetailScreenState extends State<DetailScreen> {
     User? user = _auth.currentUser;
     if (user != null) {
       DocumentSnapshot userDoc =
-          await _firestore.collection('HrdPage').doc(user.uid).get();
+          await _firestore.collection(NewUser.hrdpage).doc(user.uid).get();
 
       if (userDoc.exists) {
         setState(() {
@@ -54,14 +55,14 @@ class _DetailScreenState extends State<DetailScreen> {
   Future<void> _uploadImageToFirebase(File imageFile) async {
     User? user = _auth.currentUser;
     if (user != null) {
-      String filePath = 'profile_images/${user.uid}.jpg';
+String filePath = '${PathStorage.hrdstorage}/profil/${user.uid}.jpg';
       try {
         UploadTask uploadTask = _storage.ref(filePath).putFile(imageFile);
         TaskSnapshot snapshot = await uploadTask;
         String downloadUrl = await snapshot.ref.getDownloadURL();
 
         // Simpan URL gambar di Firestore
-        await _firestore.collection('HrdPage').doc(user.uid).set({
+        await _firestore.collection(NewUser.hrdpage).doc(user.uid).set({
           'profile_image': downloadUrl,
         }, SetOptions(merge: true));
 
@@ -94,7 +95,7 @@ class _DetailScreenState extends State<DetailScreen> {
         ),
       ),
       body: FutureBuilder<DocumentSnapshot>(
-        future: _firestore.collection('HrdPage').doc(_auth.currentUser?.uid).get(),
+        future: _firestore.collection(NewUser.hrdpage).doc(_auth.currentUser?.uid).get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

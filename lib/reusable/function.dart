@@ -24,4 +24,7 @@ Color textBar() {
 
 class NewUser {
  static const String hrdpage = 'HrdPage';
-} 
+}
+class PathStorage {
+ static const String hrdstorage = 'HrdStorage/';
+}  
